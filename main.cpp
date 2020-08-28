@@ -2,6 +2,7 @@
 #include <fstream>
 #include <algorithm>
 #include "mpi.h"
+#include "main.h"
 
 void split_file_with_overlaps(const std::string &path, int splits, int overlap_bytes) {
   std::cout << "Splitting reference file " << path << std::endl;
@@ -36,7 +37,7 @@ void split_file_with_overlaps(const std::string &path, int splits, int overlap_b
     file.seekg(rollback_point);
     std::ofstream out_split(path + ".split." + std::to_string(split));
     out_split << header << std::endl;
-    uint64_t lines_written = 0;
+    int64_t lines_written = 0;
     while (std::getline(file, str)) {
       out_split << str << std::endl;
       lines_written++;
@@ -60,6 +61,8 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   std::cout << "Starting worker " << rank << std::endl;
+
+  bwa_index(argc, argv);
 
   if (rank == 0) {
     split_file_with_overlaps(argv[1], world_size, 1024 * 1024);
