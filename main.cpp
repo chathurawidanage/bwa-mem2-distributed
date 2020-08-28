@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
   std::cout << "Starting worker " << rank << std::endl;
 
   if (rank == 0) {
-    split_file_with_overlaps(argv[1], 300, 1024 * 1024);
+    split_file_with_overlaps(argv[1], world_size, 1024 * 1024);
   }
 
   MPI_Finalize();
