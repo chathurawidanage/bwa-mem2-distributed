@@ -18,12 +18,12 @@ void split_file_with_overlaps(const std::string &path, int splits, int overlap_b
   std::string str;
   std::getline(file, header); // header
   std::getline(file, str); // normal line
-  auto line_size = ((str.size() + 1) * sizeof(char)); // +1 for line break
+  int64_t line_size = ((str.size() + 1) * sizeof(char)); // +1 for line break
 
-  auto lines_count_estimate = file_size / line_size;
-  auto overlap_lines = overlap_bytes / line_size;
+  int64_t lines_count_estimate = file_size / line_size;
+  int64_t overlap_lines = overlap_bytes / line_size;
 
-  auto lines_per_worker = lines_count_estimate / splits;
+  int64_t lines_per_worker = lines_count_estimate / splits;
 
   file.seekg(0, std::ios::beg);
 
