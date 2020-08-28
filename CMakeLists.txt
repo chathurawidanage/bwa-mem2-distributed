@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(BWA)
+project(BWAD)
 
 set(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_REQUIRED_FLAGS "-std=c++17")
