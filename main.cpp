@@ -53,6 +53,15 @@ void split_file_with_overlaps(const std::string &path, int splits, int overlap_b
 
 }
 
+int usage() {
+  fprintf(stderr, "Usage: bwa-mem2 <command> <arguments>\n");
+  fprintf(stderr, "Commands:\n");
+  fprintf(stderr, "  index         create index\n");
+  fprintf(stderr, "  mem           alignment\n");
+  fprintf(stderr, "  version       print version number\n");
+  return 1;
+}
+
 int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
@@ -62,10 +71,23 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Starting worker " << rank << std::endl;
 
-  bwa_index(argc, argv);
+  int ret = -1;
+  if (argc < 2) return usage();
 
-  if (rank == 0) {
-    split_file_with_overlaps(argv[1], world_size, 1024 * 1024);
+  if (strcmp(argv[1], "index") == 0) {
+    if (rank == 0) {
+      split_file_with_overlaps(argv[2], world_size, 1024 * 1024);
+    }
+    std::string new_src = std::string(argv[2]) + ".split." + std::to_string(rank);
+
+    argv[2] = (char *) new_src.c_str();
+
+    std::cout << "Calling BWA indexing with partition " << argv[2] << std::endl;
+    // wait for worker 0 to finish splitting
+    MPI_Barrier(MPI_COMM_WORLD);
+    ret = bwa_index(argc - 1, argv + 1);
+    //todo add time taken
+    return ret;
   }
 
   MPI_Finalize();

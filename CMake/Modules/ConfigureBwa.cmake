@@ -15,9 +15,20 @@ configure_file("${CMAKE_SOURCE_DIR}/CMake/Templates/Bwa.CMakeLists.txt.cmake"
         "${BWA_ROOT}/CMakeLists.txt")
 
 execute_process(
-        COMMAND "git submodule init && git submodule update"
+        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+        RESULT_VARIABLE BWA_CONFIG
+        WORKING_DIRECTORY ${BWA_ROOT})
+
+message("BUILDING###################################")
+execute_process(
+        COMMAND ${CMAKE_COMMAND} --build .
         RESULT_VARIABLE BWA_BUILD
-        WORKING_DIRECTORY ${BWA_ROOT}/bwa)
+        WORKING_DIRECTORY ${BWA_ROOT})
+
+#execute_process(
+#        COMMAND "git submodule init && git submodule update"
+#        RESULT_VARIABLE BWA_BUILD
+#        WORKING_DIRECTORY ${BWA_ROOT}/bwa)
 
 execute_process(
         COMMAND "make"
