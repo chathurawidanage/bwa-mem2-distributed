@@ -82,12 +82,14 @@ int main(int argc, char *argv[]) {
 
     argv[2] = (char *) new_src.c_str();
 
-    std::cout << "Calling BWA indexing with partition " << argv[2] << std::endl;
     // wait for worker 0 to finish splitting
     MPI_Barrier(MPI_COMM_WORLD);
+
+    std::cout << "Calling BWA indexing with partition " << argv[2] << std::endl;
+
     ret = bwa_index(argc - 1, argv + 1);
     //todo add time taken
-    return ret;
+    std::cout << "Indexing completed by " << rank << " with return code " << ret << std::endl;
   }
 
   MPI_Finalize();

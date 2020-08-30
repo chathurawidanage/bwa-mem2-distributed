@@ -19,7 +19,6 @@ execute_process(
         RESULT_VARIABLE BWA_CONFIG
         WORKING_DIRECTORY ${BWA_ROOT})
 
-message("BUILDING###################################")
 execute_process(
         COMMAND ${CMAKE_COMMAND} --build .
         RESULT_VARIABLE BWA_BUILD
