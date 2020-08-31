@@ -1,9 +1,11 @@
 #include <iostream>
-#include <fstream>
 #include <algorithm>
-#include <expat_config.h>
 #include "mpi.h"
 #include "main.h"
+
+#ifndef PACKAGE_VERSION
+#define PACKAGE_VERSION "0.1.0"
+#endif
 
 void split_file_with_overlaps(const std::string &path, int splits, int overlap_bytes) {
   std::cout << "Splitting reference file " << path << std::endl;
