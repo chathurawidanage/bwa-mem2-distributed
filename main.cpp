@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <expat_config.h>
 #include "mpi.h"
 #include "main.h"
 
@@ -90,6 +91,24 @@ int main(int argc, char *argv[]) {
     ret = bwa_index(argc - 1, argv + 1);
     //todo add time taken
     std::cout << "Indexing completed by " << rank << " with return code " << ret << std::endl;
+  } else if (strcmp(argv[1], "mem") == 0) {
+    std::string new_src = std::string(argv[4]) + ".split." + std::to_string(rank);
+    argv[4] = (char *) new_src.c_str();
+    std::cout << "New Source for Worker " << rank << " : " << new_src;
+
+    std::string new_dest = std::string(argv[argc - 1]) + "." + std::to_string(rank);
+    argv[argc - 1] = (char *) new_dest.c_str();
+    std::cout << "New Destination for Worker " << rank << " : " << new_src;
+
+    kstring_t pg = {0, 0, 0};
+    extern char *bwa_pg;
+
+    ksprintf(&pg, "@PG\tID:bwa\tPN:bwa\tVN:%s\tCL:%s", PACKAGE_VERSION, argv[0]);
+    for (int i = 1; i < argc; ++i) ksprintf(&pg, " %s", argv[i]);
+    ksprintf(&pg, "\n");
+    bwa_pg = pg.s;
+    ret = main_mem(argc - 1, argv + 1);
+    free(bwa_pg);
   }
 
   MPI_Finalize();
