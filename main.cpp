@@ -98,8 +98,8 @@ int main(int argc, char *argv[]) {
   } else if (strcmp(argv[1], "mem") == 0) {
     tprof[MEM][0] = __rdtsc();
 
-    std::string new_src = std::string(argv[3]) + ".split." + std::to_string(rank);
-    argv[3] = (char *) new_src.c_str();
+    std::string new_src = std::string(argv[4]) + ".split." + std::to_string(rank);
+    argv[4] = (char *) new_src.c_str();
     std::cout << "New Source for Worker " << rank << " : " << new_src;
 
     std::string new_dest = std::string(argv[argc - 1]) + "." + std::to_string(rank);
