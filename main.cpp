@@ -7,6 +7,8 @@
 #define PACKAGE_VERSION "0.1.0"
 #endif
 
+uint64_t proc_freq, tprof[LIM_R][LIM_C], prof[LIM_R];
+
 void split_file_with_overlaps(const std::string &path, int splits, int overlap_bytes) {
   std::cout << "Splitting reference file " << path << std::endl;
   std::ifstream file(path, std::ios::in);
@@ -94,6 +96,8 @@ int main(int argc, char *argv[]) {
     //todo add time taken
     std::cout << "Indexing completed by " << rank << " with return code " << ret << std::endl;
   } else if (strcmp(argv[1], "mem") == 0) {
+    tprof[MEM][0] = __rdtsc();
+
     std::string new_src = std::string(argv[4]) + ".split." + std::to_string(rank);
     argv[4] = (char *) new_src.c_str();
     std::cout << "New Source for Worker " << rank << " : " << new_src;
