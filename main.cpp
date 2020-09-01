@@ -180,6 +180,7 @@ int main(int argc, char *argv[]) {
 
     std::chrono::time_point<std::chrono::system_clock> i_start = std::chrono::high_resolution_clock::now();
     ret = bwa_index(argc - 1, argv + 1);
+    MPI_Barrier(MPI_COMM_WORLD);
     std::chrono::time_point<std::chrono::system_clock> i_end = std::chrono::high_resolution_clock::now();
     //todo add time taken
     std::cout << "Indexing completed by " << rank
