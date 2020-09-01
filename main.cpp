@@ -67,6 +67,68 @@ int usage() {
   return 1;
 }
 
+std::vector<char> string_to_char(const std::vector<std::string> &strings) {
+  std::vector<char> cstrings;
+  cstrings.reserve(strings.size());
+  for (const std::string &s: strings) {
+    for (size_t i = 0; i < strlen(s.c_str()); ++i) {
+      cstrings.push_back(s.c_str()[i]);
+    }
+  }
+  return cstrings;
+}
+
+void merge_results(const std::string &input, int rank, int world_size) {
+  std::cout << "Merging results..." << std::endl;
+
+  std::ifstream file(input, std::ios::in);
+
+  std::vector<std::string> final_outputs;
+
+  const std::string sq = "@SQ";
+
+  std::string line;
+  while (std::getline(file, line)) {
+    if (line.rfind(sq) == 0) {
+      final_outputs.push_back(line);
+    }
+  }
+
+  std::vector<char> char_vector = string_to_char(final_outputs);
+
+  std::vector<int32_t> sizes;
+  sizes.reserve(world_size);
+
+  int32_t this_worker_size = char_vector.size();
+  MPI_Gather(&this_worker_size, 1, MPI_INT32_T, &sizes, world_size, MPI_INT32_T, MPI_ROOT, MPI_COMM_WORLD);
+
+  int32_t total_chars = 0;
+  std::vector<char> char_vectors_recv(total_chars);
+  std::vector<int> displs(world_size + 1);
+  displs.push_back(0);
+
+  for (int32_t s:sizes) {
+    total_chars += s;
+    displs.push_back(s);
+  }
+
+  MPI_Gatherv(char_vector.data(),
+              char_vector.size(),
+              MPI_CHAR,
+              char_vector.data(),
+              reinterpret_cast<const int *>(total_chars),
+              displs.data(),
+              MPI_CHAR,
+              MPI_ROOT,
+              MPI_COMM_WORLD);
+
+  if (rank == 0) {
+    std::string s(char_vectors_recv.begin(), char_vectors_recv.end());
+    std::cout << "RESULT IN WORKER 0" << std::endl;
+    std::cout << s << std::endl;
+  }
+}
+
 int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
@@ -100,11 +162,11 @@ int main(int argc, char *argv[]) {
 
     std::string new_src = std::string(argv[4]) + ".split." + std::to_string(rank);
     argv[4] = (char *) new_src.c_str();
-    std::cout << "New Source for Worker " << rank << " : " << new_src;
+    std::cout << "New Source for Worker " << rank << " : " << new_src << std::endl;
 
     std::string new_dest = std::string(argv[argc - 1]) + "." + std::to_string(rank);
     argv[argc - 1] = (char *) new_dest.c_str();
-    std::cout << "New Destination for Worker " << rank << " : " << new_src;
+    std::cout << "New Destination for Worker " << rank << " : " << new_dest << std::endl;
 
     kstring_t pg = {0, 0, 0};
     extern char *bwa_pg;
@@ -116,7 +178,11 @@ int main(int argc, char *argv[]) {
     ret = main_mem(argc - 1, argv + 1);
     free(bwa_pg);
 
+    MPI_Barrier(MPI_COMM_WORLD);
 
+    // now read the output again and do merging
+
+    merge_results(new_dest, rank, world_size);
   }
 
   MPI_Finalize();
