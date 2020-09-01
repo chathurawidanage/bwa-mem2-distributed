@@ -100,7 +100,7 @@ void merge_results(const std::string &input, int rank, int world_size) {
   sizes.reserve(world_size);
 
   int32_t this_worker_size = char_vector.size();
-  MPI_Gather(&this_worker_size, 1, MPI_INT32_T, &sizes, world_size, MPI_INT32_T, MPI_ROOT, MPI_COMM_WORLD);
+  MPI_Gather(&this_worker_size, 1, MPI_INT32_T, &sizes, world_size, MPI_INT32_T, 0, MPI_COMM_WORLD);
 
   int32_t total_chars = 0;
   std::vector<char> char_vectors_recv(total_chars);
@@ -119,7 +119,7 @@ void merge_results(const std::string &input, int rank, int world_size) {
               reinterpret_cast<const int *>(total_chars),
               displs.data(),
               MPI_CHAR,
-              MPI_ROOT,
+              0,
               MPI_COMM_WORLD);
 
   if (rank == 0) {
