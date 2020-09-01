@@ -41,7 +41,9 @@ void split_file_with_overlaps(const std::string &path, int splits, int overlap_b
   for (int32_t split = 0; split < splits; split++) {
     file.seekg(rollback_point);
     std::ofstream out_split(path + ".split." + std::to_string(split));
-    out_split << header << std::endl;
+    if (split == 0) {
+      out_split << header << std::endl;
+    }
     int64_t lines_written = 0;
     while (std::getline(file, str)) {
       out_split << str << std::endl;
