@@ -167,7 +167,11 @@ int main(int argc, char *argv[]) {
 
   if (strcmp(argv[1], "index") == 0) {
     if (rank == 0) {
+      std::chrono::time_point<std::chrono::system_clock> i_start = std::chrono::high_resolution_clock::now();
       split_file_with_overlaps(argv[2], world_size, 1024);
+      std::chrono::time_point<std::chrono::system_clock> i_end = std::chrono::high_resolution_clock::now();
+      std::cout << "Wall clock time for partitioning : "
+                << std::chrono::duration<double, std::milli>(i_end - i_start).count() << "ms" << std::endl;
     }
     std::string new_src = std::string(argv[2]) + ".split." + std::to_string(rank);
 
