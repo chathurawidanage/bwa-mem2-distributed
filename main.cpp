@@ -90,41 +90,56 @@ void merge_results(const std::string &input, int rank, int world_size) {
   std::string line;
   while (std::getline(file, line)) {
     if (line.rfind(sq) == 0) {
-      final_outputs.push_back(line);
+      final_outputs.push_back(line + "\n");
     }
   }
 
   std::vector<char> char_vector = string_to_char(final_outputs);
 
-  std::vector<int32_t> sizes;
-  sizes.reserve(world_size);
+  std::string seding(char_vector.begin(), char_vector.end());
+  std::cout << "Worker " << rank << " sending : " << seding << std::endl;
 
+  int32_t sizes[world_size];
+//  std::vector<int32_t> sizes;
+//  sizes.reserve(world_size);
+
+  //std::cout << "Exchanging sizes..." << std::endl;
   int32_t this_worker_size = char_vector.size();
-  MPI_Gather(&this_worker_size, 1, MPI_INT32_T, &sizes, world_size, MPI_INT32_T, 0, MPI_COMM_WORLD);
+  MPI_Gather(&this_worker_size, 1, MPI_INT32_T, &sizes, 1, MPI_INT32_T, 0, MPI_COMM_WORLD);
 
+  std::cout << "Sizes exchanged..." << std::endl;
   int32_t total_chars = 0;
-  std::vector<char> char_vectors_recv(total_chars);
-  std::vector<int> displs(world_size + 1);
-  displs.push_back(0);
 
-  for (int32_t s:sizes) {
-    total_chars += s;
-    displs.push_back(s);
+  int displs[world_size];
+  displs[0] = 0;
+
+  if (rank == 0) {
+    for (int x = 0; x < world_size; x++) {
+      std::cout << "rank " << x << " size " << sizes[x] << std::endl;
+      total_chars += sizes[x];
+      if (x != world_size - 1) {
+        std::cout << "dis :  " << total_chars << std::endl;
+        displs[x + 1] = total_chars;
+      }
+    }
   }
 
+  char char_vectors_recv[total_chars];
+
+  std::cout << "Exchanging data " << rank << std::endl;
   MPI_Gatherv(char_vector.data(),
               char_vector.size(),
               MPI_CHAR,
-              char_vector.data(),
-              reinterpret_cast<const int *>(total_chars),
-              displs.data(),
+              char_vectors_recv,
+              sizes,
+              displs,
               MPI_CHAR,
               0,
               MPI_COMM_WORLD);
 
   if (rank == 0) {
-    std::string s(char_vectors_recv.begin(), char_vectors_recv.end());
-    std::cout << "RESULT IN WORKER 0" << std::endl;
+    std::string s(char_vectors_recv);
+    std::cout << "RESULT IN WORKER 0, Size" << total_chars << std::endl;
     std::cout << s << std::endl;
   }
 }
@@ -136,6 +151,12 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+//  std::string path(argv[1]);
+//  path = path + std::to_string(rank) + ".txt";
+//  std::cout << "Path : " << path;
+//  merge_results(path, rank, world_size);
+//  MPI_Finalize();
+//  return 0;
   std::cout << "Starting worker " << rank << std::endl;
 
   int ret = -1;
