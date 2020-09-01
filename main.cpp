@@ -203,6 +203,7 @@ int main(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) ksprintf(&pg, " %s", argv[i]);
     ksprintf(&pg, "\n");
     bwa_pg = pg.s;
+    std::chrono::time_point<std::chrono::system_clock> i_start = std::chrono::high_resolution_clock::now();
     ret = main_mem(argc - 1, argv + 1);
     free(bwa_pg);
 
@@ -214,8 +215,11 @@ int main(int argc, char *argv[]) {
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    if (rank == 0) {
+    std::chrono::time_point<std::chrono::system_clock> i_end = std::chrono::high_resolution_clock::now();
 
+    if (rank == 0) {
+      std::cout << "Time taken for searching " << std::chrono::duration<double, std::milli>(i_end - i_start).count()
+                << "ms" << std::endl;
     }
   }
 
