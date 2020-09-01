@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
 
   if (strcmp(argv[1], "index") == 0) {
     if (rank == 0) {
-      split_file_with_overlaps(argv[2], world_size, 1024 * 1024);
+      split_file_with_overlaps(argv[2], world_size, 0);
     }
     std::string new_src = std::string(argv[2]) + ".split." + std::to_string(rank);
 
