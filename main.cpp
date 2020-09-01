@@ -186,6 +186,10 @@ int main(int argc, char *argv[]) {
     std::cout << "Indexing completed by " << rank
               << " with return code " << ret << " in "
               << std::chrono::duration<double, std::milli>(i_end - i_start).count() << "ms" << std::endl;
+    if (rank == 0) {
+      std::cout << "Wall clock time for indexing : "
+                << std::chrono::duration<double, std::milli>(i_end - i_start).count() << "ms" << std::endl;
+    }
   } else if (strcmp(argv[1], "mem") == 0) {
     tprof[MEM][0] = __rdtsc();
 
@@ -208,8 +212,6 @@ int main(int argc, char *argv[]) {
     ret = main_mem(argc - 1, argv + 1);
     free(bwa_pg);
 
-    MPI_Barrier(MPI_COMM_WORLD);
-
     // now read the output again and do merging
 
     merge_results(new_dest, rank, world_size);
@@ -219,7 +221,8 @@ int main(int argc, char *argv[]) {
     std::chrono::time_point<std::chrono::system_clock> i_end = std::chrono::high_resolution_clock::now();
 
     if (rank == 0) {
-      std::cout << "Time taken for searching " << std::chrono::duration<double, std::milli>(i_end - i_start).count()
+      std::cout << "Wall clock time for searching "
+                << std::chrono::duration<double, std::milli>(i_end - i_start).count()
                 << "ms" << std::endl;
     }
   }
