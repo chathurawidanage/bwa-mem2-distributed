@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <chrono>
 #include "mpi.h"
 #include "main.h"
 
@@ -177,9 +178,13 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Calling BWA indexing with partition " << argv[2] << std::endl;
 
+    std::chrono::time_point<std::chrono::system_clock> i_start = std::chrono::high_resolution_clock::now();
     ret = bwa_index(argc - 1, argv + 1);
+    std::chrono::time_point<std::chrono::system_clock> i_end = std::chrono::high_resolution_clock::now();
     //todo add time taken
-    std::cout << "Indexing completed by " << rank << " with return code " << ret << std::endl;
+    std::cout << "Indexing completed by " << rank
+              << " with return code " << ret << " in "
+              << std::chrono::duration<double, std::milli>(i_end - i_start).count() << "ms" << std::endl;
   } else if (strcmp(argv[1], "mem") == 0) {
     tprof[MEM][0] = __rdtsc();
 
@@ -206,6 +211,12 @@ int main(int argc, char *argv[]) {
     // now read the output again and do merging
 
     merge_results(new_dest, rank, world_size);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (rank == 0) {
+
+    }
   }
 
   MPI_Finalize();
